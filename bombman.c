@@ -58,14 +58,15 @@ typedef struct PCc {
 }PC_pos;
 typedef struct NPCc {
     COORD pos;
+    BOOLEAN live;
 }NPC_pos_pattern;
 typedef struct NPCcc {
     COORD pos;
+    BOOLEAN live;
 }NPC_pos_nopattern;
 typedef struct mainCharacterInfo {
     int hp;
     int bombNum;                                                                            //캐릭터가 놓은 Bomb의 갯수
-    int plusHpItem;
     int plusBombNumItem;
     int plusBombPowerItem;
 
@@ -82,28 +83,33 @@ mainCharacterInfo MainCharacter;
 #define GBOARD_HEIGHT 15
 #define GBOARD_ORIGIN_X 4
 #define GBOARD_ORIGIN_Y 2
+PC_pos* pc;
+NPC_pos_pattern* npc_pattern;
+NPC_pos_nopattern* npc_nopattern;
 int cnt_npc_pattern;
 int cnt_npc_nopattern;
 void drawingTotalMap();
+
+
 double TimeBoardInfo[GBOARD_HEIGHT + 2][GBOARD_WIDTH + 2];
 //플레이어가 물풍선닿았을 때 색깔 바뀌는
 int gameBoardInfo[GBOARD_HEIGHT + 2][GBOARD_WIDTH + 2] = {
     {100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100},
     {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
-    {100,0  ,100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
-    {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,200,0  ,0  ,0  ,0  ,100},
-    {100,0  ,0  ,0  ,0  ,100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,101,0  ,0  ,100},
-    {100,0  ,0,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
-    {100,0  ,0,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100,0  ,0  ,0  ,200,100},
-    {100,0  ,0,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
-    {100,0  ,0,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
-    {100,0  ,0,0  ,0  ,0  ,0  ,100,101,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
-    {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100,0  ,0  ,100},
-    {100,0  ,0  ,100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,101,0  ,100},
+    {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,202,0  ,0  ,0  ,0  ,0  ,0  ,100},
+    {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
+    {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
+    {100,0  ,0  ,0  ,0  ,200,0  ,0  ,0  ,0  ,0  ,0  ,201,0  ,0  ,0  ,100},
+    {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
+    {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
+    {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,201,0  ,0  ,0  ,100},
+    {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,202,0  ,0  ,0  ,0  ,0  ,0  ,100},
+    {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
+    {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,202,0  ,0  ,0  ,0  ,0  ,0  ,100},
     {100,0  ,0  ,0  ,0  ,0  ,200,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
     {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
-    {100,0  ,0  ,0  ,0  ,0  ,0  ,101,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
-    {100,0  ,0  ,0  ,0  ,0  ,101,0  ,0  ,0  ,200,0  ,0  ,0  ,0  ,0  ,100},
+    {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
+    {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
     {100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100},
 };
 
@@ -153,7 +159,6 @@ int  isMiddleBomb(int i, int j)
     else return 0;
 
 }
-
 int isFinalBomb(int i, int j)
 {
     if (gameBoardInfo[i][j] == BombOne2)
@@ -176,20 +181,28 @@ int  detectCharacter(int i, int j)
         MainCharacter.hp--;
         printf("캐릭터hp:%d", MainCharacter.hp);
         gameBoardInfo[i][j] = 401;
-
         return 1;
     }
     if (gameBoardInfo[i][j] == 500 || gameBoardInfo[i][j] == 501)
     {
         if (gameBoardInfo[i][j] == 500)
         {
-            cnt_npc_pattern--;
+            for (int k = 0; k < cnt_npc_pattern; k++) {
+                if (npc_pattern[k].pos.X == j && npc_pattern[k].pos.Y == i && npc_pattern[k].live) {
+                    npc_pattern[k].live = FALSE;//npc 죽임
+                }
+            }
+            gameBoardInfo[i][j] = 0; //npc지움
         }
         if (gameBoardInfo[i][j] == 501)
         {
-            cnt_npc_nopattern--;
+            for (int k = 0; k < cnt_npc_nopattern; k++) {
+                if (npc_nopattern[k].pos.X == j && npc_nopattern[k].pos.Y == i && npc_nopattern[k].live) {
+                    npc_nopattern[k].live = FALSE;//npc 죽임
+                }
+            }
+            gameBoardInfo[i][j] = 0; //npc지움
         }
-        gameBoardInfo[i][j] = 0;
     }
     return 0;
 }
@@ -416,16 +429,12 @@ void RemoveCursor(void)
 
 }
 
-
-
-PC_pos* pc;
-NPC_pos_pattern* npc_pattern;
-NPC_pos_nopattern* npc_nopattern;
-
+//한강섭
 int abs(int n) {
     if (n < 0) return n * -1;
     else return n;
 }
+
 void setpc(int y, int x) {
     pc->pos.Y = y;
     pc->pos.X = x;
@@ -433,23 +442,71 @@ void setpc(int y, int x) {
     return;
 }
 void setnpc_pattern(int i, int y, int x) {
+    npc_pattern[i].live = TRUE;
     npc_pattern[i].pos.Y = y;
     npc_pattern[i].pos.X = x;
     gameBoardInfo[y][x] = 500;
     return;
 }
 void setnpc_nopattern(int i, int y, int x) {
+    npc_pattern[i].live = TRUE;
     npc_nopattern[i].pos.Y = y;
     npc_nopattern[i].pos.X = x;
     gameBoardInfo[y][x] = 501;
     return;
 }
-int DetectCollosion(int y, int x) {
-    if (gameBoardInfo[y][x] != 0) return 1;
-    else return 0;
+
+int DetectpcCollision(int y, int x) {
+    if (gameBoardInfo[y][x] == 0) return 0;//아무것도 없는 곳이니깐 움직인다 
+    else if (gameBoardInfo[y][x] == 500 || gameBoardInfo[y][x] == 501) { //다음 위치가 npc랑 만나는 위치일때 
+        MainCharacter.hp--;
+        printf("캐릭터hp:%d", MainCharacter.hp);
+        if (gameBoardInfo[y][x] == 500)
+        {
+            for (int i = 0; i < cnt_npc_pattern; i++) {
+                if (npc_pattern[i].pos.X == x && npc_pattern[i].pos.Y == y && npc_pattern[i].live) {
+                    npc_pattern[i].live = FALSE;//npc 죽임
+                }
+            }
+            gameBoardInfo[y][x] = 0; //npc지움
+        }
+        if (gameBoardInfo[y][x] == 501)
+        {
+            for (int i = 0; i < cnt_npc_nopattern; i++) {
+                if (npc_nopattern[i].pos.X == x && npc_nopattern[i].pos.Y == y && npc_nopattern[i].live) {
+                    npc_nopattern[i].live = FALSE; //npc죽임
+                }
+            }
+            gameBoardInfo[y][x] = 0; //지운다.
+        }
+        return 0; //pc를 다음위치로 움직인다.
+    }
+    else if (gameBoardInfo[y][x] == 200) {
+        MainCharacter.hp += 1;
+        printf("캐릭터hp:%d", MainCharacter.hp);
+        gameBoardInfo[y][x] = 0;
+        return 0;
+    }
+    else if (gameBoardInfo[y][x] == 201) {
+        MainCharacter.plusBombNumItem += 1;
+        gameBoardInfo[y][x] = 0;
+        return 0;
+    }
+    else if (gameBoardInfo[y][x] == 202) {
+        MainCharacter.plusBombPowerItem += 1;
+        gameBoardInfo[y][x] = 0;
+        return 0;
+    }
+    else return 1; //그 외에는 움직이지 않는다.
 }
+int DetectnpcCollision(int y, int x) {
+    if (gameBoardInfo[y][x] == 0) return 0;//아무것도 없는 곳이니깐 움직인다 
+    else if (gameBoardInfo[y][x] == 400) return 2; //다음 위치가 pc랑 만나는 위치일때 
+    else return 1; //막혀있을 때
+}
+
 void move_pc(int y, int x) {
-    if (DetectCollosion(pc->pos.Y + y, pc->pos.X + x)) return;
+    if (DetectpcCollision(pc->pos.Y + y, pc->pos.X + x)) return;
     gameBoardInfo[pc->pos.Y][pc->pos.X] = 0;
     pc->pos.X += x;
     pc->pos.Y += y;
@@ -460,6 +517,7 @@ void move_pc(int y, int x) {
 void move_pattern_npc() {
     for (int i = 0; i < cnt_npc_pattern; i++)
     {
+        if (!npc_pattern[i].live) continue;
         int random;
         random = rand() % 4; //random 0 왼 1 오 2 위 3 아래
         int x, y;
@@ -479,11 +537,19 @@ void move_pattern_npc() {
             x = 0;
             y = 1;
         }
-        if (DetectCollosion(npc_pattern[i].pos.Y + y, npc_pattern[i].pos.X + x)) continue;
-        gameBoardInfo[npc_pattern[i].pos.Y][npc_pattern[i].pos.X] = 0;
-        npc_pattern[i].pos.X += x;
-        npc_pattern[i].pos.Y += y;
-        gameBoardInfo[npc_pattern[i].pos.Y][npc_pattern[i].pos.X] = 500;
+        if (DetectnpcCollision(npc_pattern[i].pos.Y + y, npc_pattern[i].pos.X + x) == 1) continue; //막혔을때
+        else if (DetectnpcCollision(npc_pattern[i].pos.Y + y, npc_pattern[i].pos.X + x) == 2) { //pc랑 부딪혔을때
+            MainCharacter.hp--;
+            printf("캐릭터hp:%d", MainCharacter.hp);
+            gameBoardInfo[npc_pattern[i].pos.Y][npc_pattern[i].pos.X] = 0;
+            npc_pattern[i].live = FALSE;
+        }
+        else { //움직일때
+            gameBoardInfo[npc_pattern[i].pos.Y][npc_pattern[i].pos.X] = 0;
+            npc_pattern[i].pos.X += x;
+            npc_pattern[i].pos.Y += y;
+            gameBoardInfo[npc_pattern[i].pos.Y][npc_pattern[i].pos.X] = 500;
+        }
         drawingTotalMap();
     }
     return;
@@ -491,6 +557,7 @@ void move_pattern_npc() {
 void move_nopattern_npc() {
     for (int i = 0; i < cnt_npc_nopattern; i++)
     {
+        if (!npc_nopattern[i].live) continue; //살아있는 것만 작동시킨다. 
         int x, y;
         y = pc->pos.Y - npc_nopattern[i].pos.Y;
         x = pc->pos.X - npc_nopattern[i].pos.X;
@@ -514,20 +581,84 @@ void move_nopattern_npc() {
                 x = 1;
             }
         }
-        if (DetectCollosion(npc_nopattern[i].pos.Y + y, npc_nopattern[i].pos.X + x)) continue;
-        gameBoardInfo[npc_nopattern[i].pos.Y][npc_nopattern[i].pos.X] = 0;
-        npc_nopattern[i].pos.X += x;
-        npc_nopattern[i].pos.Y += y;
-        gameBoardInfo[npc_nopattern[i].pos.Y][npc_nopattern[i].pos.X] = 501;
+        if (DetectnpcCollision(npc_nopattern[i].pos.Y + y, npc_nopattern[i].pos.X + x) == 1) continue; //막혔을때
+        else if (DetectnpcCollision(npc_nopattern[i].pos.Y + y, npc_nopattern[i].pos.X + x) == 2) { //pc랑 부딪혔을때
+            MainCharacter.hp--;
+            printf("캐릭터hp:%d", MainCharacter.hp);
+            gameBoardInfo[npc_nopattern[i].pos.Y][npc_nopattern[i].pos.X] = 0;
+            npc_nopattern[i].live = FALSE;
+        }
+        else { //움직일때
+            gameBoardInfo[npc_nopattern[i].pos.Y][npc_nopattern[i].pos.X] = 0;
+            npc_nopattern[i].pos.X += x;
+            npc_nopattern[i].pos.Y += y;
+            gameBoardInfo[npc_nopattern[i].pos.Y][npc_nopattern[i].pos.X] = 501;
+        }
         drawingTotalMap();
     }
     return;
 }
+//npc가 모두 죽을떄
+BOOLEAN npc_alldiecheck() {
+    int flag = 0;
+    for (int i = 0; i < cnt_npc_nopattern; i++) {
+        if (npc_nopattern[i].live) flag = 1;
+    }
+    for (int i = 0; i < cnt_npc_pattern; i++) {
+        if (npc_pattern[i].live) flag = 1;
+    }
+    if (flag == 0) return TRUE;
+    else return FALSE;
+}
+//나중에 pc체력이 0일때도 작성
+//보스 공격 할 거 만들어 논거 
+void spawnnpc(int n) { //n*2개의 npc 만큼 랜덤한 장소에 소환
+    int y, x;
+    cnt_npc_pattern = n;
+    cnt_npc_nopattern = n;
+    npc_pattern = malloc(sizeof(NPC_pos_pattern) * cnt_npc_pattern);
+    npc_nopattern = malloc(sizeof(NPC_pos_nopattern) * cnt_npc_nopattern);
+    for (int i = 0; i < n; i++) {
+        while (1) {
+            y = rand() % GBOARD_HEIGHT + 1;
+            x = rand() % GBOARD_WIDTH + 1;
+            if (gameBoardInfo[y][x] == 0) break;
+        }
+        setnpc_pattern(i, y, x);
+    }
+    for (int i = 0; i < n; i++) {
+        while (1) {
+            y = rand() % GBOARD_HEIGHT + 1;
+            x = rand() % GBOARD_WIDTH + 1;
+            if (gameBoardInfo[y][x] == 0) break;
+        }
+        setnpc_nopattern(i, y, x);
+    }
+}
+void spawnbomb(int n) {//n개의 물풍선을 랜덤한 장소에 소환
+    int y, x;
+    for (int i = 0; i < n; i++) {
+        while (1) {
+            y = rand() % GBOARD_HEIGHT + 1;
+            x = rand() % GBOARD_WIDTH + 1;
+            if (gameBoardInfo[y][x] == 0) break;
+        }
+        gameBoardInfo[y][(x)] = 300;
+        time_t start = time(NULL);
+        double current_time = (double)start;
+        firstTimeBoardInfo(current_time, x, y);
+    }
+    return;
+}
+
+
+
 int before_key;
 void ProcessKeyInput() {
     int key;
 
     for (int i = 0; i < 20; i++) {
+
         if (_kbhit() != 0) {
             key = _getch();
             switch (key) {
@@ -573,32 +704,23 @@ int main() {
     Sleep(1000);
     pc = malloc(sizeof(PC_pos));
     setpc(3, 4);
-    cnt_npc_pattern = 2;
-    cnt_npc_nopattern = 2;
-    npc_pattern = malloc(sizeof(NPC_pos_pattern) * cnt_npc_pattern);
-    npc_nopattern = malloc(sizeof(NPC_pos_nopattern) * cnt_npc_nopattern);
-    setnpc_pattern(0, 8, 8);
-    setnpc_pattern(1, 3, 9);
-    setnpc_nopattern(0, 7, 7);
-    setnpc_nopattern(1, 6, 6);
+    spawnnpc(2); //각각 3개의 npc를 소환하는 함수 만듬
     MainCharacter.bombNum = 0;
     MainCharacter.plusBombNumItem = 10;
     MainCharacter.plusBombPowerItem = 4;
     MainCharacter.hp = 3;
     drawingTotalMap();
     while (1) {
+        //printf("%lf", time);
         time_t current_time = time(NULL);
         double time = (double)current_time;
-        //printf("%lf", time);
         findChangingBomb(time);
         explosion();
         ProcessKeyInput();
         move_pattern_npc();
         move_nopattern_npc();
+        if (npc_alldiecheck()) break; //npc가 모두 죽으면 끝내준다. 
     }
-
-
-
     return 0;
 }
 
