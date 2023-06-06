@@ -4,8 +4,8 @@
 #include <Windows.h>
 #include <string.h>
 #include <time.h>
- 
-typedef enum ColorType {// color를 정의 해주는 코드
+
+typedef enum ColorType {
     BLACK,     //0
     darkBLUE,   //1
     DarkGreen,   //2
@@ -23,37 +23,38 @@ typedef enum ColorType {// color를 정의 해주는 코드
     YELLOW,      //14
     WHITE      //15
 }COLOR;
-enum Block {           //block을 정의 해주는 코드
+enum Block {
     BlockSolid = 100,
     BlockWeak,
 }BLOCK;
-enum Item { //item을 정의 해주는 코드
+enum Item {
     ItemHeart = 200,
     ItemBomb,
     ItemPower
 } ITEM;
-enum Bomb {//터지는 폭탄 을 정의 해주는 코드
+enum Bomb {
     BombFour = 300,
-    BombFour2,
-    BombThree,
-    BombThree2,
-    BombTwo,
-    BombTwo2,
-    BombOne,
-    BombOne2,
-    BombZero,
+    BombFour2 = 301,
+    BombThree = 302,
+    BombThree2 = 303,
+    BombTwo = 304,
+    BombTwo2 = 305,
+    BombOne = 306,
+    BombOne2 = 307,
+    BombZero = 310
 } BOMB;
-enum Pc {//게임을 사용하는 사용자를 정의 해주는 코드
+enum Pc {
     PcNormal = 400,
     PcOnBomb
 } PC;
-enum Npc {//게임 내의 적을 표현한 코드
+enum Npc {
     NpcPattern = 500,
     NpcNOPattern = 501
 } NPC;
 
 typedef struct PCc {
     COORD pos;
+
 }PC_pos;
 typedef struct NPCc {
     COORD pos;
@@ -61,6 +62,16 @@ typedef struct NPCc {
 typedef struct NPCcc {
     COORD pos;
 }NPC_pos_nopattern;
+typedef struct mainCharacterInfo {
+    int hp;
+    int bombNum;                                                                            //캐릭터가 놓은 Bomb의 갯수
+    int plusHpItem;
+    int plusBombNumItem;
+    int plusBombPowerItem;
+
+}mainCharacterInfo;
+mainCharacterInfo MainCharacter;
+
 #define KUP 72
 #define KDOWN 80
 #define KLEFT 75
@@ -72,6 +83,7 @@ typedef struct NPCcc {
 #define GBOARD_ORIGIN_X 4
 #define GBOARD_ORIGIN_Y 2
 void drawingTotalMap();
+double TimeBoardInfo[GBOARD_HEIGHT + 2][GBOARD_WIDTH + 2];
 
 int gameBoardInfo[GBOARD_HEIGHT + 2][GBOARD_WIDTH + 2] = {
     {100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100},
@@ -79,11 +91,11 @@ int gameBoardInfo[GBOARD_HEIGHT + 2][GBOARD_WIDTH + 2] = {
     {100,0  ,100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
     {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,200,0  ,0  ,0  ,0  ,100},
     {100,0  ,0  ,0  ,0  ,100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,101,0  ,0  ,100},
-    {100,0  ,300,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
-    {100,0  ,301,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100,0  ,0  ,0  ,200,100},
-    {100,0  ,302,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
-    {100,0  ,303,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
-    {100,0  ,304,0  ,0  ,0  ,0  ,100,101,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
+    {100,0  ,0,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
+    {100,0  ,0,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100,0  ,0  ,0  ,200,100},
+    {100,0  ,0,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
+    {100,0  ,0,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
+    {100,0  ,0,0  ,0  ,0  ,0  ,100,101,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
     {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100,0  ,0  ,100},
     {100,0  ,0  ,100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,101,0  ,100},
     {100,0  ,0  ,0  ,0  ,0  ,200,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
@@ -93,7 +105,110 @@ int gameBoardInfo[GBOARD_HEIGHT + 2][GBOARD_WIDTH + 2] = {
     {100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100},
 };
 
+void firstTimeBoardInfo(double current_time, int x, int y)
+{
+    TimeBoardInfo[y][x] = current_time;
+    printf("%d %d", x, y);
 
+}
+void putBomb(int x, int y)
+{
+    if (isBombNum(x, y) == 1)
+    {
+        printf("%d %d", x, y);
+        gameBoardInfo[y][(x)] = 300;
+        time_t start = time(NULL);
+        double current_time = (double)start;
+        firstTimeBoardInfo(current_time, x, y);
+        MainCharacter.bombNum++;
+    }
+    else return;
+}
+int isBombNum(int x, int y)
+{
+
+    if (gameBoardInfo[y][x] != 0)
+    {
+
+        return 0;
+    }
+    if (MainCharacter.bombNum >= MainCharacter.plusBombNumItem)
+
+    {
+
+        return 0;
+    }
+
+    return 1;
+}
+int  isMiddleBomb(int i, int j)
+
+{
+    if (gameBoardInfo[i][j] >= BombFour && gameBoardInfo[i][j] <= BombZero)
+    {
+        return 1;
+    }
+    else return 0;
+
+}
+void findChangingBomb(double current_time)
+{
+    for (int i = 0; i < 17; i++)
+    {
+        for (int j = 0; j < 17; j++)
+        {
+            if (isMiddleBomb(i, j) == 1)
+            {
+
+
+                if (current_time - TimeBoardInfo[i][j] >= 8)
+                {
+                    gameBoardInfo[i][j] = BombZero;
+                }
+
+                if (current_time - TimeBoardInfo[i][j] >= 7 && current_time - TimeBoardInfo[i][j] < 8)
+                {
+                    gameBoardInfo[i][j] = BombOne2;
+                }
+
+                if (current_time - TimeBoardInfo[i][j] >= 6 && current_time - TimeBoardInfo[i][j] < 7)
+                {
+
+                    gameBoardInfo[i][j] = BombOne;
+                }
+                if (current_time - TimeBoardInfo[i][j] >= 5 && current_time - TimeBoardInfo[i][j] < 6)
+                {
+
+                    gameBoardInfo[i][j] = BombTwo2;
+                }
+                if (current_time - TimeBoardInfo[i][j] >= 4 && current_time - TimeBoardInfo[i][j] < 5)
+                {
+
+                    gameBoardInfo[i][j] = BombTwo;
+                }
+                if (current_time - TimeBoardInfo[i][j] >= 3 && current_time - TimeBoardInfo[i][j] < 4)
+                {
+
+                    gameBoardInfo[i][j] = BombThree2;
+                }
+                if (current_time - TimeBoardInfo[i][j] >= 2 && current_time - TimeBoardInfo[i][j] < 3)
+                {
+
+                    gameBoardInfo[i][j] = BombThree;
+                }
+                if (current_time - TimeBoardInfo[i][j] >= 1 && current_time - TimeBoardInfo[i][j] < 2)
+                {
+
+                    gameBoardInfo[i][j] = BombFour2;
+                }
+
+
+
+
+            }
+        }
+    }
+}
 
 void SetCurrentCursorPos(int x, int y)
 {
@@ -248,6 +363,10 @@ void ProcessKeyInput() {
             case 80:
                 move_pc(1, 0);
                 break;
+            case 32:
+                putBomb(pc->pos.X + 1, pc->pos.Y);
+                break;
+
             }
         }
         Sleep(20);
@@ -269,8 +388,15 @@ int main() {
     setnpc_pattern(1, 3, 9);
     setnpc_nopattern(0, 7, 7);
     setnpc_nopattern(1, 6, 6);
+    MainCharacter.bombNum = 0;
+    MainCharacter.plusBombNumItem = 10;
+    MainCharacter.plusBombPowerItem = 4;
     drawingTotalMap();
     while (1) {
+        time_t current_time = time(NULL);
+        double time = (double)current_time;
+        //printf("%lf", time);
+        findChangingBomb(time);
         ProcessKeyInput();
         move_pattern_npc();
         move_nopattern_npc();
