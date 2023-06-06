@@ -48,7 +48,8 @@ enum Bomb {
 } BOMB;
 enum Pc {
     PcNormal = 400,
-    PcOnBomb = 401
+    PcOnBomb = 401,
+    PcOnHit = 402
 } PC;
 enum Npc {
     NpcPattern = 500,
@@ -103,7 +104,7 @@ bossCharacterInfo bossCharacter;
 PC_pos* pc;
 NPC_pos_pattern* npc_pattern;
 NPC_pos_nopattern* npc_nopattern;
-int npcspeed = 8;
+int npcspeed = 12;
 int cnt_npc_pattern;
 int cnt_npc_nopattern;
 int curMenu = 0;
@@ -190,15 +191,15 @@ int gameBoardInfo3[GBOARD_HEIGHT + 2][GBOARD_WIDTH + 2] = {
     {100,0  ,0  ,100,101,100,101,100,101,100,101,100,101,100,0  ,0  ,100},
     {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
     {100,100,0  ,100,101,100,101,100,0  ,100,101,100,101,100,0  ,100,100},
-    {100,101,0  ,101,101,100,101,101,0  ,101,101,100,101,101,0  ,101,100},
+    {100,101,0  ,101,100,100,100,101,0  ,101,100,100,100,101,0  ,101,100},
     {100,100,0  ,100,100,100,100,100,0  ,100,100,100,100,100,0  ,100,100},
-    {100,101,0  ,101,101,100,101,101,0  ,101,101,100,101,101,0  ,101,100},
+    {100,101,0  ,101,100,100,100,101,0  ,101,100,100,100,101,0  ,101,100},
     {100,100,0  ,100,101,100,101,100,0  ,100,101,100,101,100,0  ,100,100},
     {100,101,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,101,100},
     {100,100,0  ,100,101,100,101,100,0  ,100,101,100,101,100,0  ,100,100},
-    {100,101,0  ,101,101,100,101,101,0  ,101,101,100,101,101,0  ,101,100},
+    {100,101,0  ,101,100,100,100,101,0  ,101,100,100,100,101,0  ,101,100},
     {100,100,0  ,100,100,100,100,100,0  ,100,100,100,100,100,0  ,100,100},
-    {100,101,0  ,101,101,100,101,101,0  ,101,101,100,101,101,0  ,101,100},
+    {100,101,0  ,101,100,100,100,101,0  ,101,100,100,100,101,0  ,101,100},
     {100,101,0  ,100,101,100,101,100,0  ,100,101,100,101,100,0  ,100,100},
     {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
     {100,0  ,0  ,100,101,100,101,100,101,100,101,100,101,100,0  ,0  ,100},
@@ -212,13 +213,13 @@ int gameBoardInfo4[GBOARD_HEIGHT + 2][GBOARD_WIDTH + 2] = {
     {100,101,101,100,100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100,100,101,101,100},
     {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
     {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
-    {100,0  ,0  ,101,0  ,100,100,100,100,100,100,100,0  ,101,0  ,0  ,100},
-    {100,0  ,0  ,101,0  ,100,100,100,100,100,100,100,0  ,101,0  ,0  ,100},
-    {100,0  ,0  ,101,0  ,100,100,100,100,100,100,100,0  ,101,0  ,0  ,100},
-    {100,0  ,0  ,101,0  ,100,100,100,100,100,100,100,0  ,101,0  ,0  ,100},
+    {100,0  ,0  ,100,0  ,100,100,100,100,100,100,100,0  ,100,0  ,0  ,100},
+    {100,0  ,0  ,100,0  ,100,100,100,100,100,100,100,0  ,100,0  ,0  ,100},
+    {100,0  ,0  ,100,0  ,100,100,100,100,100,100,100,0  ,100,0  ,0  ,100},
+    {100,0  ,0  ,100,0  ,100,100,100,100,100,100,100,0  ,100,0  ,0  ,100},
     {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
     {100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100},
-    {100,101,101,100,100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100,100,101,101,100},
+    {100,101,100,100,100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100,100,100,101,100},
     {100,101,100,100,100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100,100,100,101,100},
     {100,101,0  ,100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100,0  ,101,100},
     {100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100},
@@ -514,7 +515,7 @@ void explosion()
                 }
                 for (int x = 1; x < MainCharacter.plusBombPowerItem; x++)
                 {
-                    if (gameBoardInfo[i - x][j] >= ItemHeart && gameBoardInfo[i - x][j + x] <= ItemPower)
+                    if (gameBoardInfo[i - x][j] >= ItemHeart && gameBoardInfo[i - x][j] <= ItemPower)
                         gameBoardInfo[i - x][j] = BombZero;
                     else
                     {
@@ -587,7 +588,6 @@ void findChangingBomb(double current_time)
                 {
 
                     gameBoardInfo[i][j] = BombOne;
-                    printf("     %lf    %lf", current_time, TimeBoardInfo[i][j]);
 
 
 
@@ -703,7 +703,7 @@ int DetectpcCollision(int y, int x) {
             }
             gameBoardInfo[y][x] = 0; //지운다.
         }
-        return 0; //pc를 다음위치로 움직인다.
+        return 2; //pc를 다음위치로 움직인다. 
     }
     else if (gameBoardInfo[y][x] == 200) {
         if (MainCharacter.hp < 6) {
@@ -735,11 +735,13 @@ int DetectnpcCollision(int y, int x) {
 }
 
 void move_pc(int y, int x) {
-    if (DetectpcCollision(pc->pos.Y + y, pc->pos.X + x)) return;
+    int isDetect = DetectpcCollision(pc->pos.Y + y, pc->pos.X + x);
+    if (isDetect == 1) return;
     gameBoardInfo[pc->pos.Y][pc->pos.X] = 0;
     pc->pos.X += x;
     pc->pos.Y += y;
-    gameBoardInfo[pc->pos.Y][pc->pos.X] = 400;
+    if (isDetect == 2)gameBoardInfo[pc->pos.Y][pc->pos.X] = 402;
+    else gameBoardInfo[pc->pos.Y][pc->pos.X] = 400;
     drawingTotalMap();
     return;
 }
@@ -798,6 +800,7 @@ void move_pattern_npc() {
             MainCharacter.hp--;
             gameBoardInfo[npc_pattern[i].pos.Y][npc_pattern[i].pos.X] = 0;
             npc_pattern[i].live = FALSE;
+            gameBoardInfo[pc->pos.Y][pc->pos.X] = 402;
         }
         else { //움직일때
             gameBoardInfo[npc_pattern[i].pos.Y][npc_pattern[i].pos.X] = 0;
@@ -864,6 +867,8 @@ void move_nopattern_npc() {
             MainCharacter.hp--;
             gameBoardInfo[npc_nopattern[i].pos.Y][npc_nopattern[i].pos.X] = 0;
             npc_nopattern[i].live = FALSE;
+            gameBoardInfo[pc->pos.Y][pc->pos.X] = 402;
+
         }
         else { //움직일때
             gameBoardInfo[npc_nopattern[i].pos.Y][npc_nopattern[i].pos.X] = 0;
@@ -1035,6 +1040,7 @@ void ProcessKeyInput() {
                 move_pc(-1, 0);
                 break;
             case 80:
+                nextStage();
                 move_pc(1, 0);
                 break;
             case 32:
@@ -1136,12 +1142,12 @@ int main() {
 
 
         setpc(1, 1);                           // pc 위치 초기화
-        spawnnpc(2); //각각 3개의 npc를 소환하는 함수 만듬
+        spawnnpc(3); //각각 3개의 npc를 소환하는 함수 만듬
         MainCharacter.bombNum = 0;
         MainCharacter.plusBombNumItem = 3;     // 물폭탄 개수 초기화
         MainCharacter.plusBombPowerItem = 2;   // 화력 초기화
-        MainCharacter.hp = 5;
-        bossCharacter.boss_hp = 42;
+        MainCharacter.hp = 3;
+        bossCharacter.boss_hp = 10;
         // pc hp 초기화
         erazeWindow();
         drawingTotalMap();
@@ -1152,10 +1158,13 @@ int main() {
             findChangingBomb(time);
             explosion();
             ProcessKeyInput();
-            printf("%d", bossCharacter.boss_hp);
             /* 스테이지 ㄱㄱ
             */
-            if (MainCharacter.hp < 1) break; //npc가 모두 죽으면 끝내준다. or pc 죽으면 끝내준다.
+            if (MainCharacter.hp < 1)
+            {
+                flag = 1;
+                break; //npc가 모두 죽으면 끝내준다. or pc 죽으면 끝내준다.
+            }
             if (flag == 1) { //보스 맵 아닐때 
                 if (npc_alldiecheck()) {
                     free(npc_pattern);
@@ -1573,7 +1582,11 @@ void printGameBoard() {
                     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BLUE);
                     printf("♀");
                     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), WHITE);
-
+                    break;
+                case PcOnHit:
+                    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), RED);
+                    printf("♀");
+                    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), WHITE);
                     break;
                 default:
                     break;
@@ -1697,17 +1710,38 @@ void drawPowerUI() {
 
 void drawNpcHP() {
     SetCurrentCursorPos(STATUS_MENU_WINDOW_X, STATUS_MENU_WINDOW_Y + 6);
-    if (bossCharacter.boss_hp / 10 >= 3) {
-        printf("보스 HP : ■■■■■■■■■■■■■■");
+    if (bossCharacter.boss_hp == 10) {
+        printf("보스 HP : ■■■■■■■■■■");
     }
-    else if (1) {
-        printf("보스 HP : ■■■■■■■■■■■■■■");
+    else if (bossCharacter.boss_hp == 9) {
+        printf("보스 HP : ■■■■■■■■■□");
     }
-    else if (1) {
-        printf("보스 HP : ■■■■■■■■■■■■■■");
+    else if (bossCharacter.boss_hp == 8) {
+        printf("보스 HP : ■■■■■■■■□□");
+    }
+    else if (bossCharacter.boss_hp == 7) {
+        printf("보스 HP : ■■■■■■■□□□");
+    }
+    else if (bossCharacter.boss_hp == 6) {
+        printf("보스 HP : ■■■■■■□□□□");
+    }
+    else if (bossCharacter.boss_hp == 5) {
+        printf("보스 HP : ■■■■■□□□□□");
+    }
+    else if (bossCharacter.boss_hp == 4) {
+        printf("보스 HP : ■■■■□□□□□□");
+    }
+    else if (bossCharacter.boss_hp == 3) {
+        printf("보스 HP : ■■■□□□□□□□");
+    }
+    else if (bossCharacter.boss_hp == 2) {
+        printf("보스 HP : ■■□□□□□□□□");
+    }
+    else if (bossCharacter.boss_hp == 1) {
+        printf("보스 HP : ■□□□□□□□□□");
     }
     else {
-        printf("보스 HP : ■■■■■■■■■■■■■■");
+        printf("보스 HP : □□□□□□□□□□");
     }
 }
 int nextStage() {
@@ -1717,7 +1751,7 @@ int nextStage() {
     if (stageNum == 5) {
         return 0;
     }
-    if (stageNum == 2) { //만약 보스라고 생각한다.
+    if (stageNum == 4) { //만약 보스라고 생각한다.
         for (i = 0; i < GBOARD_HEIGHT + 2; i++) {
             for (j = 0; j < GBOARD_WIDTH + 2; j++) {
                 gameBoardInfo[i][j] = gameBoardInfo4[i][j];
@@ -1730,7 +1764,7 @@ int nextStage() {
         MainCharacter.plusBombNumItem = 3;     // 물폭탄 개수 초기화
         MainCharacter.plusBombPowerItem = 2;   // 화력 초기화
         drawingTotalMap();
-        npcspeed = 20;
+        npcspeed = 15;
         return 2; //return 2로 신호를 준다.
     }
     if (stageNum == 3) {
@@ -1739,17 +1773,19 @@ int nextStage() {
                 gameBoardInfo[i][j] = gameBoardInfo3[i][j];
             }
         }
+        npcspeed = 2;
     }
-    if (stageNum == 4) {
+    if (stageNum == 2) {
         for (i = 0; i < GBOARD_HEIGHT + 2; i++) {
             for (j = 0; j < GBOARD_WIDTH + 2; j++) {
-                gameBoardInfo[i][j] = gameBoardInfo4[i][j];
+                gameBoardInfo[i][j] = gameBoardInfo2[i][j];
             }
         }
+        npcspeed = 5;
     }
 
     setpc(1, 1);                           // pc 위치 초기화
-    spawnnpc(2); //각각 3개의 npc를 소환하는 함수 만듬
+    spawnnpc(4); //각각 3개의 npc를 소환하는 함수 만듬
     MainCharacter.bombNum = 0;
     MainCharacter.hp = 3;
     MainCharacter.plusBombNumItem = 3;     // 물폭탄 개수 초기화
