@@ -5,7 +5,7 @@
 #include <string.h>
 #include <time.h>
 
-typedef enum ColorType {
+typedef enum ColorType {        //색깔을 정의.
     BLACK, //0
     darkBLUE, //1
     DarkGreen, //2
@@ -23,19 +23,19 @@ typedef enum ColorType {
     YELLOW, //14
     WHITE //15
 }COLOR;
-enum Block {
+enum Block {   //블록을 정의.
     BlockSolid = 100,
     BlockWeak = 101,
     BossWeakBlock = 130,
     BossWeakBlockAttacked = 131
 
 }BLOCK;
-enum Item {
+enum Item {     //Item 을 정의
     ItemHeart = 200,
     ItemBomb = 201,
     ItemPower = 202
 } ITEM;
-enum Bomb {
+enum Bomb {      //폭탄을 정의
     BombFour = 300,
     BombFour2 = 301,
     BombThree = 302,
@@ -46,29 +46,29 @@ enum Bomb {
     BombOne2 = 307,
     BombZero = 310
 } BOMB;
-enum Pc {
+enum Pc {        //사용자를 정의
     PcNormal = 400,
     PcOnBomb = 401,
     PcOnHit = 402
 } PC;
-enum Npc {
+enum Npc {      //적(npc)을 정의
     NpcPattern = 500,
     NpcNOPattern = 501
 } NPC;
 
-typedef struct PCc {
+typedef struct PCc { //사용자를 구조체로 정의
     COORD pos;
 
 }PC_pos;
-typedef struct NPCc {
+typedef struct NPCc {//적중 patternNpc를  구조체로 정의
     COORD pos;
     BOOLEAN live;
 }NPC_pos_pattern;
-typedef struct NPCcc {
+typedef struct NPCcc {//적중 nopatternNpc를  구조체로 정의
     COORD pos;
     BOOLEAN live;
 }NPC_pos_nopattern;
-typedef struct mainCharacterInfo {
+typedef struct mainCharacterInfo {          //사용자 즉 캐릭터의 정보를 구조체에 저장
     int hp;
     int bombNum; //캐릭터가 놓은 Bomb의 갯수
     int plusBombNumItem;
@@ -76,7 +76,7 @@ typedef struct mainCharacterInfo {
 
 }mainCharacterInfo;
 mainCharacterInfo MainCharacter;
-typedef struct bossCharacterInfo
+typedef struct bossCharacterInfo               //보스의 정보를 구조체에 저장
 {
     int phase;
     int boss_hp;
@@ -86,7 +86,7 @@ bossCharacterInfo bossCharacter;
 
 
 
-#define KUP 72
+#define KUP 72                              
 #define KDOWN 80
 #define KLEFT 75
 #define KRIGHT 77
@@ -110,6 +110,7 @@ int cnt_npc_nopattern;
 int curMenu = 0;
 int whatClick = 0;
 int wantExit = 0;
+//화면의 오른쪽의 캐릭터의 세팅창 및, UI설정
 void drawingTotalMap();
 void printHeroHp();
 void printGameBoard();
@@ -128,6 +129,7 @@ double TimeBoardInfo[GBOARD_HEIGHT + 2][GBOARD_WIDTH + 2];
 
 int stageNum = 1;
 
+//1,2,3 ,boss 및 튜토리얼 스테이지 맵임.
 int gameBoardInfo[GBOARD_HEIGHT + 2][GBOARD_WIDTH + 2] = {
 {100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100},
 {100,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,100},
@@ -264,12 +266,14 @@ int gameBoardInfoTest[GBOARD_HEIGHT + 2][GBOARD_WIDTH + 2] = {
 {100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100},
 };
 
+//시간을 측정하는 함수,
 void firstTimeBoardInfo(double current_time, int x, int y)
 {
     TimeBoardInfo[y][x] = current_time;
 
 
 }
+//폭탄을 놓는 함수.
 void putBomb(int x, int y)
 {
     if (isBombNum(x, y) == 1)
@@ -283,6 +287,7 @@ void putBomb(int x, int y)
     }
     else return;
 }
+//폭탄의 갯수를 측정하는 함수
 int isBombNum(int x, int y)
 {
 
@@ -300,6 +305,7 @@ int isBombNum(int x, int y)
 
     return 1;
 }
+//아래는 폭탄과 관련된 함수들임.
 int isMiddleBomb(int i, int j)
 
 {
@@ -318,6 +324,7 @@ int isFinalBomb(int i, int j)
     }
     else return 0;
 }
+//여기는  폭탄에서 터진 물줄기 관련함수
 int isWaterLine(int i, int j)
 {
     if (gameBoardInfo[i][j] == BombZero)
@@ -325,6 +332,7 @@ int isWaterLine(int i, int j)
     else return 0;
 
 }
+//캐릭터와 여러 객체가 닿았을 때의 액션을 담음. 또한 그 아래들은 다른 객체들과 닿았을 때를 계산 
 int detectCharacter(int i, int j)
 {
     if (gameBoardInfo[i][j] == 400 || gameBoardInfo[i][j] == 401)
@@ -377,13 +385,14 @@ int detectBossWeakBlock(int i, int j)
     }
     return 0;
 }
+//물줄기로 하여금 블록을 깨고 나서, 블록 안에서 item이 랜덤으로 생성하는 함수.
 int makeRandomItem()
 {
     int ran = rand() % 3;
     int itemN = 200 + ran;
     return itemN;
 }
-void explosion()
+void explosion()// 물폭탄이 폭발할 때 
 {
     for (int i = 0; i < 17; i++)
     {
@@ -416,7 +425,7 @@ void explosion()
                         if (detectBossWeakBlock(i, j + x) == 1)
                         {
                             bossCharacter.boss_hp--;
-
+                            bossCharacter.phase = 2;
                         }
                         else
                         {
@@ -460,7 +469,7 @@ void explosion()
                         if (detectBossWeakBlock(i, j - x) == 1)
                         {
                             bossCharacter.boss_hp--;
-
+                            bossCharacter.phase = 2;
                         }
                         else
                         {
@@ -503,6 +512,7 @@ void explosion()
                         {
 
                             bossCharacter.boss_hp--;
+                            bossCharacter.phase = 2;
                         }
                         else
                         {
@@ -542,7 +552,7 @@ void explosion()
                         if (detectBossWeakBlock(i - x, j) == 1)
                         {
                             bossCharacter.boss_hp--;
-
+                            bossCharacter.phase = 2;
                         }
                         else
                         {
@@ -585,7 +595,7 @@ void explosion()
 }
 
 
-void findChangingBomb(double current_time)
+void findChangingBomb(double current_time)  //중간에 변화하는 폭탄을 찾는 함수.
 {
     for (int i = 0; i < 17; i++)
     {
@@ -644,7 +654,7 @@ void findChangingBomb(double current_time)
         }
     }
 }
-
+//커서위치를 세팅해주는 함수,커서 위치를 반환해주는 함수, 커서를 제거해주는 함수.
 void SetCurrentCursorPos(int x, int y)
 {
     COORD position = { x, y };
@@ -673,12 +683,12 @@ void RemoveCursor(void)
 
 }
 
-//한강섭
+
 int abs(int n) {
     if (n < 0) return n * -1;
     else return n;
 }
-
+//캐릭터, 적들을 세팅해주는 함수.
 void setpc(int y, int x) {
     pc->pos.Y = y;
     pc->pos.X = x;
@@ -699,7 +709,7 @@ void setnpc_nopattern(int i, int y, int x) {
     gameBoardInfo[y][x] = 501;
     return;
 }
-
+//캐릭터와 npc가 접촉 할때
 int DetectpcCollision(int y, int x) {
     if (gameBoardInfo[y][x] == 0) return 0;//아무것도 없는 곳이니깐 움직인다
     else if (gameBoardInfo[y][x] == 500 || gameBoardInfo[y][x] == 501) { //다음 위치가 npc랑 만나는 위치일때
@@ -747,12 +757,13 @@ int DetectpcCollision(int y, int x) {
     }
     else return 1; //그 외에는 움직이지 않는다.
 }
+//npc가 접촉 될때,
 int DetectnpcCollision(int y, int x) {
     if (gameBoardInfo[y][x] == 0) return 0;//아무것도 없는 곳이니깐 움직인다
     else if (gameBoardInfo[y][x] == 400) return 2; //다음 위치가 pc랑 만나는 위치일때
     else return 1; //막혀있을 때
 }
-
+//캐릭터의 이동을 관장
 void move_pc(int y, int x) {
     int isDetect = DetectpcCollision(pc->pos.Y + y, pc->pos.X + x);
     if (isDetect == 1) return;
@@ -764,6 +775,7 @@ void move_pc(int y, int x) {
     drawingTotalMap();
     return;
 }
+//pattern_npc의 이동을 관장
 void move_pattern_npc() {
     for (int i = 0; i < cnt_npc_pattern; i++)
     {
@@ -831,6 +843,7 @@ void move_pattern_npc() {
     }
     return;
 }
+//nopattern_npc의 이동을 관장
 void move_nopattern_npc() {
     for (int i = 0; i < cnt_npc_nopattern; i++)
     {
@@ -956,6 +969,7 @@ void spawnnpc(int n) { //n*2개의 npc 만큼 랜덤한 장소에 소환
     }
     return;
 }
+//보스가 적을 소환 하는 함수
 void addspawnnpc(int n) {
     int y, x;
     cnt_npc_pattern += n;
@@ -1007,8 +1021,10 @@ void deletenpc() {
             }
         }
     }
-    free(npc_nopattern);
-    free(npc_pattern);
+    for (int i = 0; i < cnt_npc_nopattern; i++) {
+        npc_nopattern[i].live = FALSE;
+        npc_pattern[i].live = FALSE;
+    }
     return;
 }
 void spawnbomb(int n) {//n개의 물풍선을 랜덤한 장소에 소환
@@ -1026,7 +1042,7 @@ void spawnbomb(int n) {//n개의 물풍선을 랜덤한 장소에 소환
     }
     return;
 }
-void spawnbossweak(int n) {
+void spawnbossweak(int n) {       //보스의 약점블록을 소환하는 함수
     int y, x;
     for (int i = 0; i < n; i++) {
         while (1) {
@@ -1038,7 +1054,7 @@ void spawnbossweak(int n) {
     }
     return;
 }
-void deletebossweak() {
+void deletebossweak() {//보스의 약점블록을 제거하는 함수
     int x, y;
     for (y = 0; y < GBOARD_HEIGHT + 2; y++)
     {
@@ -1051,7 +1067,7 @@ void deletebossweak() {
     }
     return;
 }
-void npcspeedup() {
+void npcspeedup() {      //적의 속도를 올리는 함수.
     if (npcspeed <= 0) return;
     npcspeed--;
     return;
@@ -1060,7 +1076,7 @@ void npcspeedup() {
 int flag = 1; //boss 단계 구분하는 flag
 int before_key;
 int e = 0; //공격이랑 npc속도 관련
-void ProcessKeyInput() {
+void ProcessKeyInput() {   //사용자의 키 입력을 받음.
     int key;
 
     for (int i = 0; i < 20; i++) {
@@ -1073,6 +1089,9 @@ void ProcessKeyInput() {
                 break;
             case 77:
                 move_pc(0, 1);
+                break;
+            case 57:
+                deletenpc();
                 break;
             case 72:
                 move_pc(-1, 0);
@@ -1106,8 +1125,23 @@ void ProcessKeyInput() {
             drawingTotalMap();
         }
         if (flag == 2) { //보스 단계일때 보스공격
+            if (e % 300 == 270) {
+                bossCharacter.phase = 1;
+            }
             if (e % 300 == 0) {
                 addspawnnpc(2);
+            }
+            if (e % 300 == 50) {
+                bossCharacter.phase = 0;
+            }
+            if (e % 300 == 105) {
+                bossCharacter.phase = 0;
+            }
+            if (e % 300 == 160) {
+                bossCharacter.phase = 0;
+            }
+            if (e % 300 == 215) {
+                bossCharacter.phase = 0;
             }
             if (e % 5000 == 0) {
                 npcspeedup();
@@ -1129,8 +1163,8 @@ int main() {
     settingUiInit();
     srand(time(NULL));
     RemoveCursor();
-    //drawingTotalMap(); // 이거 왜있는거죠? 주석처리 할게용 메뉴 만들때 오류남
-    Sleep(1000); // 얘도 왜있는거지 ㅇㄴ
+
+    Sleep(1000);
     pc = malloc(sizeof(PC_pos));
 
     while (1) {
@@ -1232,7 +1266,7 @@ int main() {
 void settingUiInit() {
 }
 
-void drawingTotalMap() {
+void drawingTotalMap() {//map을 그림.
     printGameBoard();
     printHeroHp();
     drawBombNumUI();
@@ -1240,7 +1274,7 @@ void drawingTotalMap() {
     drawNpcHP();
 }
 
-void printGameBoard() {
+void printGameBoard() { //게임 보드를 그림 즉 map의 실제적인 역할을 하는 부분을 그림.
     int x, y;
     int cursX, cursY;
 
@@ -1265,6 +1299,21 @@ void printGameBoard() {
                 switch (gameBoardInfo[y][x]) {
                 case BlockSolid:
                     if (stageNum == 4 && x >= BOSS_START_X && y >= BOSS_START_Y && x <= 11 && y <= 10) {
+                        if (bossCharacter.boss_hp > 8) {
+                            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), GREEN);
+                        }
+                        else if (bossCharacter.boss_hp > 6) {
+                            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), YELLOW);
+                        }
+                        else if (bossCharacter.boss_hp > 4) {
+                            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), DarkYellow);
+                        }
+                        else if (bossCharacter.boss_hp > 2) {
+                            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), RED);
+                        }
+                        else {
+                            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), DarkRed);
+                        }
                         if (bossCharacter.phase == 0) {
                             if (x == BOSS_START_X && y == BOSS_START_Y) {
                                 printf("┌ ");
@@ -1285,7 +1334,7 @@ void printGameBoard() {
                                 printf(" ┐");
                             }
                             else if (x == BOSS_START_X + 6 && y == BOSS_START_Y) {
-                                printf(" ");
+                                printf("  ");
                             }
                             else if (x == BOSS_START_X && y == BOSS_START_Y + 1) {
                                 printf("O ");
@@ -1327,7 +1376,7 @@ void printGameBoard() {
                                 printf("─┘");
                             }
                             else if (x == BOSS_START_X + 6 && y == BOSS_START_Y + 2) {
-                                printf(" ");
+                                printf("  ");
                             }
                             else if (x == BOSS_START_X && y == BOSS_START_Y + 3) {
                                 printf("∮");
@@ -1371,7 +1420,7 @@ void printGameBoard() {
                                 printf(" ┐");
                             }
                             else if (x == BOSS_START_X + 6 && y == BOSS_START_Y) {
-                                printf(" ");
+                                printf("  ");
                             }
                             else if (x == BOSS_START_X && y == BOSS_START_Y + 1) {
                                 printf(" ┌");
@@ -1413,7 +1462,7 @@ void printGameBoard() {
                                 printf("─┘");
                             }
                             else if (x == BOSS_START_X + 6 && y == BOSS_START_Y + 2) {
-                                printf(" ");
+                                printf("  ");
                             }
                             else if (x == BOSS_START_X && y == BOSS_START_Y + 3) {
                                 printf("∮");
@@ -1457,7 +1506,7 @@ void printGameBoard() {
                                 printf(" ┐");
                             }
                             else if (x == BOSS_START_X + 6 && y == BOSS_START_Y) {
-                                printf(" ");
+                                printf("  ");
                             }
                             else if (x == BOSS_START_X && y == BOSS_START_Y + 1) {
                                 printf("o");
@@ -1499,7 +1548,7 @@ void printGameBoard() {
                                 printf("─┘");
                             }
                             else if (x == BOSS_START_X + 6 && y == BOSS_START_Y + 2) {
-                                printf(" ");
+                                printf("  ");
                             }
                             else if (x == BOSS_START_X && y == BOSS_START_Y + 3) {
                                 printf("∮");
@@ -1527,6 +1576,7 @@ void printGameBoard() {
                     else {
                         printf("■");
                     }
+                    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), WHITE);
                     break;
                 case BlockWeak:
                     printf("▦");
@@ -1652,7 +1702,7 @@ void printGameBoard() {
         }
     }
 }
-
+//사용자의 상태를 그려줌.
 void printHeroHp() {
     SetCurrentCursorPos(STATUS_MENU_WINDOW_X, STATUS_MENU_WINDOW_Y);
     if (MainCharacter.hp == 6) {
@@ -1787,7 +1837,10 @@ void drawNpcHP() {
     else {
         printf("%적의 수 : %d", countnpc());
     }
+    SetCurrentCursorPos(STATUS_MENU_WINDOW_X, STATUS_MENU_WINDOW_Y + 8);
+    printf(" %d Stage", stageNum);
 }
+//다음 단계로 넘어감.
 int nextStage() {
     int i, j;
 
@@ -1845,7 +1898,7 @@ int nextStage() {
 
     return 1;
 }
-
+//맨 처음의 메뉴를 그리는 함수
 void drawingGameMenu() {
     if (curMenu == 0) {
         SetCurrentCursorPos(50, 10);
