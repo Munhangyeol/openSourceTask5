@@ -25,7 +25,10 @@ typedef enum ColorType {
 }COLOR;
 enum Block {
     BlockSolid = 100,
-    BlockWeak = 101
+    BlockWeak = 101,
+
+    BossWeakBlock = 130                                          //bossWeakBlock을 130으로 설정함.
+
 }BLOCK;
 enum Item {
     ItemHeart = 200,
@@ -72,6 +75,14 @@ typedef struct mainCharacterInfo {
 
 }mainCharacterInfo;
 mainCharacterInfo MainCharacter;
+typedef struct bossCharacterInfo
+{
+    int boss_hp;
+
+}bossCharacterInfo;
+bossCharacterInfo bossCharacter;
+
+
 
 #define KUP 72
 #define KDOWN 80
@@ -111,18 +122,18 @@ int gameBoardInfo[GBOARD_HEIGHT + 2][GBOARD_WIDTH + 2] = {
     {100,0  ,0  ,100,101,100,101,100,101,100,101,100,101,100,0  ,0  ,100},
     {100,0  ,0  ,0  ,101,101,101,101,101,101,101,101,101,0  ,0  ,0  ,100},
     {100,100,0  ,100,101,100,101,100,101,100,101,100,101,100,0  ,100,100},
-    {100,101,101,101,101,101,101,101,101,101,101,101,101,101,101,101,100},
-    {100,100,101,100,101,100,101,100,101,100,101,100,101,100,101,100,100},
-    {100,101,101,101,101,101,101,101,101,101,101,101,101,101,101,101,100},
-    {100,100,101,100,101,100,101,100,101,100,101,100,101,100,101,100,100},
-    {100,101,101,101,101,101,101,101,101,101,101,101,101,101,101,101,100},
-    {100,100,101,100,101,100,101,100,101,100,101,100,101,100,101,100,100},
-    {100,101,101,101,101,101,101,101,101,101,101,101,101,101,101,101,100},
-    {100,100,101,100,101,100,101,100,101,100,101,100,101,100,101,100,100},
-    {100,101,101,101,101,101,101,101,101,101,101,101,101,101,101,101,100},
+    {100,101,0,0,0,0,0,0,0,0,0,0,0,0,0,0,100},
+    {100,100,0,100,101,100,101,100,101,100,101,100,101,100,0,100,100},
+    {100,101,0,0,0,0,0,0,0,0,0,0,0,0,0,0,100},
+    {100,100,0,100,101,100,101,100,101,100,101,100,101,100,0,100,100},
+    {100,101,0,0,0,0,0,0,0,0,0,0,0,0,0,0,100},
+    {100,100,0,100,101,100,101,100,101,100,101,100,101,100,0,100,100},
+    {100,101,0,101,101,101,101,101,101,101,101,101,101,101,0,101,100},
+    {100,100,0,100,101,100,101,100,101,100,101,100,101,100,0,100,100},
+    {100,101,0,101,101,101,101,101,101,101,101,101,101,101,0,101,100},
     {100,101,0  ,100,101,100,101,100,101,100,101,100,101,100,0  ,100,100},
     {100,0  ,0  ,0  ,101,101,101,101,101,101,101,101,101,0  ,0  ,0  ,100},
-    {100,0  ,0  ,100,101,100,101,100,101,100,101,100,101,100,0  ,0  ,100},
+    {100,0  ,0  ,0,0,0,0,0,0,0,0,0,0,0,0  ,0  ,100},
     {100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100},
 };
 
@@ -147,10 +158,10 @@ int gameBoardInfo1[GBOARD_HEIGHT + 2][GBOARD_WIDTH + 2] = {
 };
 int gameBoardInfo2[GBOARD_HEIGHT + 2][GBOARD_WIDTH + 2] = {
     {100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100},
-    {100,0  ,0  ,101,101,0  ,0  ,0  ,101,0  ,0  ,0  ,101,101,101,101,100},
-    {100,0  ,100,101,0  ,100,100,100,0  ,100,100,100,0  ,101,100,101,100},
-    {100,0  ,101,0  ,100,0  ,0  ,0  ,101,0  ,0  ,0  ,100,0  ,101,101,100},
-    {100,101,0  ,100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100,0  ,101,100},
+    {100,0  ,0  ,0,0,0  ,0  ,0  ,0,0  ,0  ,0  ,101,101,101,101,100},
+    {100,0  ,100,0,0  ,100,100,100,0  ,100,100,100,0  ,101,100,101,100},
+    {100,0  ,101,0  ,100,0  ,0  ,0  ,0,0  ,0  ,0  ,100,0  ,101,101,100},
+    {100,0,0  ,100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100,0  ,101,100},
     {100,101,0  ,100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100,0  ,101,100},
     {100,101,0  ,100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100,0  ,101,100},
     {100,101,0  ,100,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,100,0  ,101,100},
@@ -328,6 +339,15 @@ int detectBlock(int i, int j)
 
     return 0;
 }
+int detectBossWeakBlock(int i, int j)
+{
+    if (gameBoardInfo[i][j] == BossWeakBlock)
+    {
+        return 1;
+
+    }
+    return 0;
+}
 int makeRandomItem()
 {
     int ran = rand() % 3;
@@ -360,87 +380,167 @@ void explosion()
                     gameBoardInfo[i][j] = BombZero;
                 for (int x = 1; x < MainCharacter.plusBombPowerItem; x++)
                 {
-
-                    if ((detectCharacter(i, j + x) == 0 && (detectBlock(i, j + x) == 0) && gameBoardInfo[i][j + x] == 0) || gameBoardInfo[i][j + x] == BlockWeak)
-                    {
-                        if (gameBoardInfo[i][j + x] == BlockWeak)
-                        {
-                            int ran = rand() % 3;
-                            if (ran == 0)
-                            {
-                                gameBoardInfo[i][j + x] = makeRandomItem();
-                            }
-                        }
-                        if (gameBoardInfo[i][j + x]<ItemHeart || gameBoardInfo[i][j + x]>ItemPower)
-
-                            gameBoardInfo[i][j + x] = BombZero;
-
-
-
-
-                    }
+                    if (gameBoardInfo[i][j + x] >= ItemHeart && gameBoardInfo[i][j + x] <= ItemPower)
+                        gameBoardInfo[i][j + x] = BombZero;
                     else
-                        break;
+                    {
+                        if (detectBossWeakBlock(i, j + x) == 1)
+                        {
+                            bossCharacter.boss_hp--;
+
+                        }
+                        else
+                        {
+                            if ((detectCharacter(i, j + x) == 0 && (detectBlock(i, j + x) == 0) && gameBoardInfo[i][j + x] == 0) || gameBoardInfo[i][j + x] == BlockWeak)
+                            {
+                                if (gameBoardInfo[i][j + x] == BlockWeak)
+                                {
+                                    int ran = rand() % 3;
+                                    if (ran == 0)
+                                    {
+                                        gameBoardInfo[i][j + x] = makeRandomItem();
+
+                                    }
+                                    else
+                                    {
+                                        gameBoardInfo[i][j + x] = BombZero;
+
+                                    }
+                                    break;
+
+                                }
+                                if (gameBoardInfo[i][j + x]<ItemHeart || gameBoardInfo[i][j + x]>ItemPower)
+
+                                    gameBoardInfo[i][j + x] = BombZero;
+
+
+
+
+                            }
+                            else
+                                break;
+                        }
+                    }
                 }
                 for (int x = 1; x < MainCharacter.plusBombPowerItem; x++)
                 {
-
-                    if ((detectCharacter(i, j - x) == 0 && (detectBlock(i, j - x) == 0) && gameBoardInfo[i][j - x] == 0) || gameBoardInfo[i][j - x] == BlockWeak)
-                    {
-                        if (gameBoardInfo[i][j - x] == BlockWeak)
-                        {
-                            int ran = rand() % 3;
-                            if (ran == 0)
-                            {
-                                gameBoardInfo[i][j - x] = makeRandomItem();
-                            }
-                        }
-                        if (gameBoardInfo[i][j - x]<ItemHeart || gameBoardInfo[i][j - x]>ItemPower)
-                            gameBoardInfo[i][j - x] = BombZero;
-
-                    }
+                    if (gameBoardInfo[i][j - x] >= ItemHeart && gameBoardInfo[i][j - x] <= ItemPower)
+                        gameBoardInfo[i][j - x] = BombZero;
                     else
-                        break;
+                    {
+                        if (detectBossWeakBlock(i, j - x) == 1)
+                        {
+                            bossCharacter.boss_hp--;
+
+                        }
+                        else
+                        {
+
+
+                            if ((detectCharacter(i, j - x) == 0 && (detectBlock(i, j - x) == 0) && gameBoardInfo[i][j - x] == 0) || gameBoardInfo[i][j - x] == BlockWeak)
+                            {
+                                if (gameBoardInfo[i][j - x] == BlockWeak)
+                                {
+                                    int ran = rand() % 3;
+                                    if (ran == 0)
+                                    {
+                                        gameBoardInfo[i][j - x] = makeRandomItem();
+
+                                    }
+                                    else
+                                    {
+                                        gameBoardInfo[i][j - x] = BombZero;
+
+                                    }
+                                    break;
+                                }
+                                if (gameBoardInfo[i][j - x]<ItemHeart || gameBoardInfo[i][j - x]>ItemPower)
+                                    gameBoardInfo[i][j - x] = BombZero;
+
+                            }
+                            else
+                                break;
+                        }
+                    }
                 }
                 for (int x = 1; x < MainCharacter.plusBombPowerItem; x++)
                 {
-
-                    if ((detectCharacter(i + x, j) == 0 && (detectBlock(i + x, j) == 0) && gameBoardInfo[i + x][j] == 0) || gameBoardInfo[i + x][j] == BlockWeak)
-                    {
-                        if (gameBoardInfo[i + x][j] == BlockWeak)
-                        {
-                            int ran = rand() % 3;
-                            if (ran == 0)
-                            {
-                                gameBoardInfo[i + x][j] = makeRandomItem();
-                            }
-                        }
-                        if (gameBoardInfo[i + x][j]<ItemHeart || gameBoardInfo[i + x][j]>ItemPower)
-                            gameBoardInfo[i + x][j] = BombZero;
-
-                    }
+                    if (gameBoardInfo[i + x][j] >= ItemHeart && gameBoardInfo[i + x][j] <= ItemPower)
+                        gameBoardInfo[i + x][j] = BombZero;
                     else
-                        break;
+                    {
+
+                        if (detectBossWeakBlock(i + x, j) == 1)
+                        {
+
+                            bossCharacter.boss_hp--;
+                        }
+                        else
+                        {
+                            if ((detectCharacter(i + x, j) == 0 && (detectBlock(i + x, j) == 0) && gameBoardInfo[i + x][j] == 0) || gameBoardInfo[i + x][j] == BlockWeak)
+                            {
+                                if (gameBoardInfo[i + x][j] == BlockWeak)
+                                {
+                                    int ran = rand() % 3;
+                                    if (ran == 0)
+                                    {
+                                        gameBoardInfo[i + x][j] = makeRandomItem();
+
+                                    }
+                                    else
+                                    {
+                                        gameBoardInfo[i + x][j] = BombZero;
+
+                                    }
+                                    break;
+                                }
+                                if (gameBoardInfo[i + x][j]<ItemHeart || gameBoardInfo[i + x][j]>ItemPower)
+                                    gameBoardInfo[i + x][j] = BombZero;
+
+                            }
+                            else
+                                break;
+                        }
+                    }
                 }
                 for (int x = 1; x < MainCharacter.plusBombPowerItem; x++)
                 {
-
-                    if ((detectCharacter(i - x, j) == 0 && (detectBlock(i - x, j) == 0) && gameBoardInfo[i - x][j] == 0) || gameBoardInfo[i - x][j] == BlockWeak)
-                    {
-                        if (gameBoardInfo[i - x][j] == BlockWeak)
-                        {
-                            int ran = rand() % 3;
-                            if (ran == 0)
-                            {
-                                gameBoardInfo[i - x][j] = makeRandomItem();
-                            }
-                        }
-                        if (gameBoardInfo[i - x][j]<ItemHeart || gameBoardInfo[i - x][j]>ItemPower)
-                            gameBoardInfo[i - x][j] = BombZero;
-
-                    }
+                    if (gameBoardInfo[i - x][j] >= ItemHeart && gameBoardInfo[i - x][j + x] <= ItemPower)
+                        gameBoardInfo[i - x][j] = BombZero;
                     else
-                        break;
+                    {
+
+                        if (detectBossWeakBlock(i - x, j) == 1)
+                        {
+                            bossCharacter.boss_hp--;
+
+                        }
+                        else
+                        {
+                            if ((detectCharacter(i - x, j) == 0 && (detectBlock(i - x, j) == 0) && gameBoardInfo[i - x][j] == 0) || gameBoardInfo[i - x][j] == BlockWeak)
+                            {
+                                if (gameBoardInfo[i - x][j] == BlockWeak)
+                                {
+                                    int ran = rand() % 3;
+                                    if (ran == 0)
+                                    {
+                                        gameBoardInfo[i - x][j] = makeRandomItem();
+
+                                    }
+                                    else
+                                    {
+                                        gameBoardInfo[i - x][j] = BombZero;
+                                    }
+                                    break;
+                                }
+                                if (gameBoardInfo[i - x][j]<ItemHeart || gameBoardInfo[i - x][j]>ItemPower)
+                                    gameBoardInfo[i - x][j] = BombZero;
+
+                            }
+                            else
+                                break;
+                        }
+                    }
                 }
                 drawingTotalMap();
 
@@ -454,6 +554,7 @@ void explosion()
         }
     }
 }
+
 
 void findChangingBomb(double current_time)
 {
@@ -818,6 +919,7 @@ void spawnbomb(int n) {//n개의 물풍선을 랜덤한 장소에 소환
 int before_key;
 void ProcessKeyInput() {
     int key;
+    int e = 0;
 
     for (int i = 0; i < 20; i++) {
 
@@ -855,6 +957,14 @@ void ProcessKeyInput() {
             before_key = key;
         }
 
+        if (e % 4 == 0)
+        {
+            move_pattern_npc();
+            move_nopattern_npc();
+            drawingTotalMap();
+        }
+        e++;
+
         Sleep(20);
     }
     return;
@@ -882,8 +992,7 @@ int main() {
         findChangingBomb(time);
         explosion();
         ProcessKeyInput();
-        move_pattern_npc();
-        move_nopattern_npc();
+
         /* 스테이지 ㄱㄱ
         */
         if (MainCharacter.hp < 1) break; //npc가 모두 죽으면 끝내준다. or pc 죽으면 끝내준다.
