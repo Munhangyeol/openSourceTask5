@@ -6,6 +6,7 @@
 * 이 코드는 window.h라는 윈도우의 헤더파일을 이용하므로, 윈도우 환경에서 원할하게 돌아갈 것임.
 * 이 코드는 visual studio2022 환경에서 돌아가게 세팅이 되어 있으며, 컴파일 시 visual studio를 이용하는 것이 좋음.
 
+
 ### 2. 코드의 용도 및 기능.
 *  위 코드는 c언어로 구현이 되어 있다.
 *  위 코드는 water bomb이란 게임을 실행시키기 위한 코드로, 아래와 같이 visual studio의 콘솔창에서 플레이가 가능함.
@@ -13,6 +14,7 @@
 
 
 <img width="734" alt="과제5 스크린샷" src="https://github.com/Munhangyeol/openSourceTask5/assets/113831848/22b328a2-7e6d-4772-a20f-d2f51a23b69c">
+
 
 
 ### 3. 프로그램의 전반적인 설명.
