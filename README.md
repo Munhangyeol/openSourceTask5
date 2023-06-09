@@ -8,7 +8,12 @@
 
 ### 2. 코드의 용도 및 기능.
 *  위 코드는 c언어로 구현이 되어 있다.
-*  위 코드는 water bomb이란 게임을 실행시키기 위한 코드로, visual studio의 콘솔창에서 플레이가 가능함.
+*  위 코드는 water bomb이란 게임을 실행시키기 위한 코드로, 아래와 같이 visual studio의 콘솔창에서 플레이가 가능함.
+
+
+
+<img width="734" alt="과제5 스크린샷" src="https://github.com/Munhangyeol/openSourceTask5/assets/113831848/22b328a2-7e6d-4772-a20f-d2f51a23b69c">
+
 
 ### 3. 프로그램의 전반적인 설명.
 *  게임의 이름은 WaterBomb이다.
