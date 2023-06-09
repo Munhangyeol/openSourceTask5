@@ -1,6 +1,7 @@
 # openSourceTask5
 
 <br>
+
 ### 1.사용환경
 * 이 코드는 window.h라는 윈도우의 헤더파일을 이용하므로, 윈도우 환경에서 원할하게 돌아갈 것임.
 * 이 코드는 visual studio2022 환경에서 돌아가게 세팅이 되어 있으며, 컴파일 시 visual studio를 이용하는 것이 좋음.
